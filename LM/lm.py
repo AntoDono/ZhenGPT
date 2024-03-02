@@ -13,12 +13,14 @@ file_handler.setFormatter(formatter)
 
 class LanguageModel:
 
-    def __init__(self, modelID: str, device="cpu", maxLength: int = 2048, gptq: bool = False, dataset: str = "wikitext", quantize_bits: int = None):
-
-        self.device = device
+    def __init__(self, modelID: str, device:str ="cpu", device_map: str = None, trust_remote_code: bool = False, maxLength: int = 2048, torch_dtype: torch.dtype = "auto", gptq: bool = False, dataset: str = "wikitext2", quantize_bits: int = None):
+        
         self.modelID = modelID
         self.maxLength = maxLength
-        self.tokenizer = AutoTokenizer.from_pretrained(modelID)
+        self.tokenizer = AutoTokenizer.from_pretrained(modelID, max_length=self.maxLength, truncation=True, use_fast=True)
+        self.device = torch.device(device=device)
+        self.device_map = device_map
+        self.torch_dtype = torch_dtype
 
         self.bos_token = self.tokenizer.bos_token
         self.bos_token_id = self.tokenizer.bos_token_id
@@ -35,20 +37,25 @@ class LanguageModel:
                 tokenizer=self.tokenizer,
                 dataset=dataset,
                 group_size=128,
+                trust_remote_code=trust_remote_code,
+                torch_dtype=self.torch_dtype,
+                device_map=self.device_map
             )
-            self.model = AutoModelForCausalLM.from_Spretrained(
+            self.model = AutoModelForCausalLM.from_pretrained(
                 modelID,
                 quantization_config=gptqConfig,
             ).to(self.device)
         else:
             self.model = AutoModelForCausalLM.from_pretrained(
                 modelID, 
-                torch_dtype=torch.float16, 
                 load_in_4bit = quantize_bits==4,
                 load_in_8bit = quantize_bits==8,
+                trust_remote_code=trust_remote_code,
+                torch_dtype=self.torch_dtype,
+                device_map=self.device_map
             ).to(self.device)
 
-    def generate(self, prompt: str | None, inputs = None, **kwargs):
+    def generate(self, prompt: str | None, max_new_tokens: int = 100, inputs = None, **kwargs):
 
         if prompt == None and inputs == None:
             Exception(f"Both prompt and inputs are none!")
@@ -63,10 +70,8 @@ class LanguageModel:
         else:
             input_tokens = inputs
 
-        if kwargs.get("max_length") == None or kwargs.get("max_length") > self.maxLength:
-            logger.warn(f"Requested max length undefined or exceeds maxLength, setting it to {self.maxLength}")
-            kwargs["max_length"] = self.maxLength
-
+        kwargs["max_new_tokens"] = max_new_tokens
+        kwargs["max_length"] = self.maxLength
         kwargs["bos_token_id"] = self.tokenizer.bos_token_id
         kwargs["eos_token_id"] = self.tokenizer.eos_token_id
         kwargs["pad_token_id"] = self.tokenizer.pad_token_id
@@ -78,7 +83,7 @@ class LanguageModel:
 
         return self.tokenizer.decode(output[0], skip_special_tokens=skip_special_tokens)
     
-    def generateStream(self, prompt: str, stop_token_ids: List[str] = [], stop_keywords: List[str] = [], **kwargs):
+    def generateStream(self, prompt: str, max_new_tokens: int = 100, stop_token_ids: List[str] = [], stop_keywords: List[str] = [], **kwargs):
 
         active = True
 
@@ -93,15 +98,15 @@ class LanguageModel:
             skip_special_tokens = kwargs.get("skip_special_tokens") == True
             input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
 
-            if kwargs.get("max_length") == None or kwargs.get("max_length") > self.maxLength:
-                logger.warn(f"Requested max length undefined or exceeds maxLength, setting it to {self.maxLength}")
-                kwargs["max_length"] = self.maxLength
+
+            kwargs["max_length"] = self.maxLength
+            kwargs["max_new_tokens"] = max_new_tokens
 
             output = None
 
             with torch.no_grad():  # Disable gradients for efficiency
 
-                for _ in range(kwargs.get("max_length")):
+                for _ in range(max_new_tokens):
                     
                     attention_mask = torch.ones(len(input_tokens[0])).unsqueeze(0).to(self.device)
                     past_key_values = None
