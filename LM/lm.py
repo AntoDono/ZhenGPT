@@ -20,6 +20,15 @@ class LanguageModel:
         self.maxLength = maxLength
         self.tokenizer = AutoTokenizer.from_pretrained(modelID)
 
+        self.bos_token = self.tokenizer.bos_token
+        self.bos_token_id = self.tokenizer.bos_token_id
+
+        self.eos_token = self.tokenizer.eos_token
+        self.eos_token_id = self.tokenizer.eos_token_id
+
+        self.pad_token = self.tokenizer.pad_token
+        self.pad_token_id = self.tokenizer.pad_token_id
+
         if (gptq):
             gptqConfig = GPTQConfig(
                 bits=quantize_bits, 
@@ -39,9 +48,20 @@ class LanguageModel:
                 load_in_8bit = quantize_bits==8,
             ).to(self.device)
 
-    def generate(self, prompt: str, **kwargs):
+    def generate(self, prompt: str | None, inputs = None, **kwargs):
 
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
+        if prompt == None and inputs == None:
+            Exception(f"Both prompt and inputs are none!")
+
+        skip_special_tokens = kwargs.get("skip_special_tokens") == True
+        input_tokens=None
+
+        if inputs == None:
+            input_tokens = dict(
+                input_ids=self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
+            )
+        else:
+            input_tokens = inputs
 
         if kwargs.get("max_length") == None or kwargs.get("max_length") > self.maxLength:
             logger.warn(f"Requested max length undefined or exceeds maxLength, setting it to {self.maxLength}")
@@ -52,13 +72,13 @@ class LanguageModel:
         kwargs["pad_token_id"] = self.tokenizer.pad_token_id
             
         output = self.model.generate(
-            input_ids=input_tokens,
+            **input_tokens,
             generation_config = GenerationConfig(**kwargs)
         )
 
-        return self.tokenizer.decode(output[0], skip_special_tokens=True)
+        return self.tokenizer.decode(output[0], skip_special_tokens=skip_special_tokens)
     
-    def generateStream(self, prompt: str, stop_token_ids: List[str] = [], **kwargs):
+    def generateStream(self, prompt: str, stop_token_ids: List[str] = [], stop_keywords: List[str] = [], **kwargs):
 
         active = True
 
@@ -70,15 +90,12 @@ class LanguageModel:
 
             nonlocal active
 
+            skip_special_tokens = kwargs.get("skip_special_tokens") == True
             input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
 
             if kwargs.get("max_length") == None or kwargs.get("max_length") > self.maxLength:
                 logger.warn(f"Requested max length undefined or exceeds maxLength, setting it to {self.maxLength}")
                 kwargs["max_length"] = self.maxLength
-
-            bos_id = kwargs["bos_token_id"] = self.tokenizer.bos_token_id
-            eos_id = kwargs["eos_token_id"] = self.tokenizer.eos_token_id
-            pad_id = kwargs["pad_token_id"] = self.tokenizer.pad_token_id
 
             output = None
 
@@ -105,10 +122,23 @@ class LanguageModel:
 
                     token_id = next_token.item() 
 
-                    if token_id in stop_token_ids or token_id == eos_id or active == False:
+                    decoded_output = self.tokenizer.decode(input_tokens[0])
+                    stop_early = False
+
+                    for keyword in stop_keywords:
+                        if decoded_output[-len(keyword):] == keyword:
+                            stop_early = True
+                            break
+                    
+                    if stop_early:
+                        break
+
+                    if token_id in stop_token_ids or active == False:
                         break
                     
-                    yield self.tokenizer.decode(next_token)
+                    yield self.tokenizer.decode(
+                        next_token, skip_special_tokens=skip_special_tokens
+                    )
 
         return stream, stop
                     

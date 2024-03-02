@@ -1,4 +1,4 @@
-from LMHandler import LanguageModel
+from LM import LanguageModel
 
 model = LanguageModel("microsoft/phi-2", "cuda:0")
 history = [
