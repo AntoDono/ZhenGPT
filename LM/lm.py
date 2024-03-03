@@ -103,6 +103,7 @@ class LanguageModel:
             kwargs["max_new_tokens"] = max_new_tokens
 
             output = None
+            prev_decoded_output = prompt
 
             with torch.no_grad():  # Disable gradients for efficiency
 
@@ -127,7 +128,7 @@ class LanguageModel:
 
                     token_id = next_token.item() 
 
-                    decoded_output = self.tokenizer.decode(input_tokens[0])
+                    decoded_output = self.tokenizer.decode(input_tokens[0], skip_special_tokens=skip_special_tokens)
                     stop_early = False
 
                     for keyword in stop_keywords:
@@ -141,9 +142,9 @@ class LanguageModel:
                     if token_id in stop_token_ids or active == False:
                         break
                     
-                    yield self.tokenizer.decode(
-                        next_token, skip_special_tokens=skip_special_tokens
-                    )
+                    yield decoded_output[len(prev_decoded_output):]
+
+                    prev_decoded_output = decoded_output
 
         return stream, stop
                     

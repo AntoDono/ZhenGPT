@@ -8,27 +8,28 @@ warnings.filterwarnings("ignore")
 def main_loop():
         
     model = LanguageModel("microsoft/phi-2", device="cuda:0", maxLength=512)
+    # model = LanguageModel("TheBloke/CapybaraHermes-2.5-Mistral-7B-GPTQ", device_map="auto", device="cuda:0", maxLength=512)
     blip = BLIP("Salesforce/blip-image-captioning-large", "cpu", maxLength=1024)
 
     def getVision():
-        capture = cv2.VideoCapture(0)
-        retrieve, frame = capture.read() # OpenCV image is not RGB, but BGR
+        camera = cv2.VideoCapture(0)
+        retrieve, frame = camera.read() # OpenCV image is not RGB, but BGR
         rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(rgb_converted)
-        description = blip.generate("a photograph of ", raw_image=image)
+        description = blip.generate("I see ", raw_image=image)
 
-        return dict(image=image, description=description.replace("a photograph of ",""))
+        return dict(image=image, description=description.replace("I see ",""))
 
     dp = DynamicPrompt(
         enable_history=True,
         max_length=model.maxLength,
         tokenizer=model.tokenizer,
-        context="You are a helpful chatbot called KE2CMP. Speak with the user.",
+        context="You are a chatbot called Sammy. Sammy's Vision is a description of what Sammy sees. Speak with the User.",
         history=[
-            f"User: My name is Jeff |",
-            f"KE2CMP: Hello Jeff |" 
+            f"User: Hello |",
+            f"Sammy: Hello, how are you doing? |" 
         ],
-        dynamicContext= lambda : f"You can see: {getVision().get('description')}"
+        dynamicContext= lambda : f"Sammy's Vision: {getVision().get('description')}"
     )
 
     while True:
@@ -43,7 +44,7 @@ def main_loop():
             stop_keywords=["|"],
             num_beams=5,  # Number of beams to explore (e.g., 5)
             no_repeat_ngram_size=2,  # Disallow repeating bigrams (optional)
-            skip_special_tokens=False
+            skip_special_tokens=True
         )
 
         res = ""
