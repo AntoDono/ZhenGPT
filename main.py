@@ -18,8 +18,13 @@ print()
 print()
 
 r = sr.Recognizer()
-with sr.Microphone(device_index=6) as source:
-    print("Say something!")
-    audio = r.listen(source, 3)
+with sr.Microphone(device_index=1) as source:
+    print("Listening!")
+    audio = r.listen(source)
 
-print(r.recognize_sphinx(audio))
+import time
+start_time = time.time()
+print("Translating from audio...")
+# print(r.recognize_whisper(audio, "tiny", language="english"))
+print(r.recognize_vosk(audio))
+print("Translation took", time.time() - start_time, "seconds")
