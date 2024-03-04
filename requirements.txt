@@ -4,3 +4,4 @@ opencv-python==4.9.0.80
 optimum==1.17.1
 auto-gptq==0.7.1
 einops==0.7.0
+SpeechRecognition==3.10.1
