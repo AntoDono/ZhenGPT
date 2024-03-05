@@ -18,7 +18,7 @@ print()
 print()
 
 r = sr.Recognizer()
-with sr.Microphone(device_index=1) as source:
+with sr.Microphone(device_index=7) as source:
     print("Listening!")
     audio = r.listen(source)
 
