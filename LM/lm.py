@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import logging
 
-logger = logging.getLogger("LMHandler")
+logger = logging.getLogger("LMHandler - LM")
 logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler('log.txt')
 logger.addHandler(file_handler)

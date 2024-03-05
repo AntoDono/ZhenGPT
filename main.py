@@ -1,30 +1,58 @@
-import speech_recognition as sr
-import pyaudio
+from LM import BLIP, LanguageModel, DynamicPrompt
+from PIL import Image
+import warnings
+import cv2
 
-# Create an instance of PyAudio
-p = pyaudio.PyAudio()
+warnings.filterwarnings("ignore")
 
-# Get the number of audio I/O devices
-devices = p.get_device_count()
+model = LanguageModel("microsoft/phi-2", device="cuda:0", maxLength=512)
+blip = BLIP("Salesforce/blip-image-captioning-large", "cpu", maxLength=1024)
+camera = cv2.VideoCapture(0)
 
-# Iterate through all devices
-for i in range(devices):
-   # Get the device info
-   device_info = p.get_device_info_by_index(i)
-   # Check if this device is a microphone (an input device)
-   print(f"Microphone: {device_info.get('name')} , Device Index: {device_info.get('index')}")
+def getVision():
+    retrieve, frame = camera.read() # OpenCV image is not RGB, but BGR
+    rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(rgb_converted)
+    description = blip.generate("I see ", raw_image=image)
 
-print()
-print()
+    return dict(image=image, description=description.replace("I see ",""))
 
-r = sr.Recognizer()
-with sr.Microphone(device_index=7) as source:
-    print("Listening!")
-    audio = r.listen(source)
+def generate(user_input: str, dynamicPrompt: DynamicPrompt):
 
-import time
-start_time = time.time()
-print("Translating from audio...")
-# print(r.recognize_whisper(audio, "tiny", language="english"))
-print(r.recognize_vosk(audio))
-print("Translation took", time.time() - start_time, "seconds")
+    prompt = dynamicPrompt.generatePrompt(f"User: {user_input} |", append=True)
+
+    it, stop = model.generateStream(
+        prompt, 
+        stop_keywords=["|"],
+        num_beams=5,  # Number of beams to explore (e.g., 5)
+        no_repeat_ngram_size=2,  # Disallow repeating bigrams (optional)
+        skip_special_tokens=True
+    )
+
+    res = ""
+    for i in it():
+        res += i
+        yield i
+        
+    dynamicPrompt.appendHistory(f"{res} | ")
+
+if __name__ == "__main__":
+
+    dp = DynamicPrompt(
+        enable_history=True,
+        max_length=model.maxLength,
+        tokenizer=model.tokenizer,
+        context="""
+    You are a chatbot called Sammy. Sammy's Vision is a description of what Sammy sees. Speak with the User.""",
+        history=[
+            f"User: Hello |",
+            f"Sammy: Hello, how are you doing? |" 
+        ],
+        dynamicContext= lambda : f"Sammy's Vision: {getVision().get('description')}"
+    )
+
+    while True:
+        user_input = input("User: ")
+        for i in generate(user_input=user_input, dynamicPrompt=dp):
+            print(i, end="", flush=True)
+        print()
