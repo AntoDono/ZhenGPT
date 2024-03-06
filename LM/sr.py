@@ -44,7 +44,7 @@ class SpeechRecognition:
 
         start_time = time.time()
         print("Translating from audio...")
-        # result = self.recognizer.recognize_whisper(audio, "tiny", language="english")
-        result = json.loads(self.recognizer.recognize_vosk(audio)).get('text')
+        result = self.recognizer.recognize_whisper(audio, "tiny", language="english")
+        # result = json.loads(self.recognizer.recognize_vosk(audio)).get('text')
         print(f"Translation took {time.time() - start_time} seconds")
         return result

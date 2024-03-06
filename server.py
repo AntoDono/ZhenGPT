@@ -46,6 +46,7 @@ async def handle_connection(websocket: WebSocketServerProtocol):
             data_dict = json.loads(data)
             if data_dict["type"] == "generate":
                 prompt = data_dict["prompt"]
+                CAPTION[ID] = data_dict["image_caption"]
                 for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):
                     await websocket.send(word)  # Send response word by word
                 await websocket.send(GENERATION_END)
