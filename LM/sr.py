@@ -24,9 +24,11 @@ class SpeechRecognition:
 
     def setDevice(self, device_index: int):
         self.mic = sr.Microphone(device_index=device_index)
+        print("Calibrating Microphone...", end=" ", flush=True)
         with self.mic as source:
-            self.recognizer.adjust_for_ambient_noise(source=source)
-
+            self.recognizer.adjust_for_ambient_noise(source=source, duration=3)
+        print("Done")
+        
     def getDevices(self):
         devices = self.audio.get_device_count()
         parsed = []
@@ -44,7 +46,7 @@ class SpeechRecognition:
 
         start_time = time.time()
         print("Translating from audio...")
-        result = self.recognizer.recognize_whisper(audio, "tiny", language="english")
-        # result = json.loads(self.recognizer.recognize_vosk(audio)).get('text')
+        # result = self.recognizer.recognize_whisper(audio, "tiny", language="english")
+        result = json.loads(self.recognizer.recognize_vosk(audio)).get('text')
         print(f"Translation took {time.time() - start_time} seconds")
         return result
