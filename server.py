@@ -55,7 +55,7 @@ async def handle_connection(websocket: WebSocketServerProtocol):
             await websocket.send(json.dumps({"error": "Invalid data format"}))
 
 async def start_server():
-    async with serve(handle_connection, port=PORT):
+    async with serve(handle_connection, host="0.0.0.0", port=PORT):
         print(f"Websocket listening at {PORT}")
         await asyncio.Future()  # This line is never reached, but keeps the server running
 

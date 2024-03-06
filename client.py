@@ -1,8 +1,12 @@
 import asyncio
+import speech_recognition as sr
+import pyaudio
+from LM import SpeechRecognition
 import websockets
 import json
 
 GENERATION_END = "GEN_END"
+sr = SpeechRecognition(device_index=6)
 
 async def connect_and_generate():
 
@@ -11,9 +15,13 @@ async def connect_and_generate():
         try:
             while True:
 
-                prompt = input("Enter your prompt: ")
+                prompt = sr.listen()
+
+                print(f"You said: {prompt}")
 
                 await websocket.send(json.dumps({"type": "generate", "prompt": prompt}))
+
+                print("RESPONSE: ")
 
                 async for word in websocket:
                     if (GENERATION_END == word):
