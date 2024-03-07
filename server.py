@@ -3,11 +3,19 @@ import asyncio
 import json
 from websockets import serve, WebSocketServerProtocol
 import uuid
+from io import BytesIO
 
 CONNECTIONS = []
 CAPTION = {}
 PORT = 8000
 GENERATION_END = "GEN_END"
+
+def captionImageFromBytes(bytes):
+    image_file = BytesIO(bytes)
+    image = Image.open(image_file)
+    description = blip.generate("I see ", raw_image=image)
+    
+    return dict(image=image, description=description.replace("I see ",""))
 
 async def handle_connection(websocket: WebSocketServerProtocol):
 
@@ -46,7 +54,9 @@ async def handle_connection(websocket: WebSocketServerProtocol):
             data_dict = json.loads(data)
             if data_dict["type"] == "generate":
                 prompt = data_dict["prompt"]
-                CAPTION[ID] = data_dict["image_caption"]
+                image_bytes = data_dict["image_caption"]
+                CAPTION[ID] = captionImageFromBytes(image_bytes).get("description")
+
                 for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):
                     await websocket.send(word)  # Send response word by word
                 await websocket.send(GENERATION_END)

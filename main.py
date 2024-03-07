@@ -9,7 +9,6 @@ model = LanguageModel("microsoft/phi-2", device="cuda:0", maxLength=512)
 blip = BLIP("Salesforce/blip-image-captioning-large", "cpu", maxLength=1024)
 camera = cv2.VideoCapture(index=0)
 
-
 def getVision():
     retrieve, frame = camera.read() # OpenCV image is not RGB, but BGR
     rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

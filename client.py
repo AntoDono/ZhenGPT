@@ -5,22 +5,24 @@ from LM import SpeechRecognition
 import websockets
 import json
 import cv2
-from LM import BLIP
+from io import BytesIO
 from PIL import Image
 
 GENERATION_END = "GEN_END"
 sr = SpeechRecognition(device_index=6)
-blip = BLIP("Salesforce/blip-image-captioning-large", "cpu", maxLength=1024)
 
 def getVision():
     camera = cv2.VideoCapture(index=0)
     retrieve, frame = camera.read() # OpenCV image is not RGB, but BGR
+    camera.release()
     rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(rgb_converted)
-    description = blip.generate("I see ", raw_image=image)
-    camera.release()
 
-    return dict(image=image, description=description.replace("I see ",""))
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="JPEG")
+    image_bytes = image_bytes.getvalue()
+
+    return dict(bytes=image_bytes)
 
 async def connect_and_generate():
 
@@ -30,15 +32,15 @@ async def connect_and_generate():
             while True:
 
                 prompt = sr.listen()
-                description = getVision().get("description")
+                vision = getVision()
 
-                print(f"Prompt: {prompt} | Description: {description}")
+                print(f"Prompt: {prompt}")
 
                 await websocket.send(
                     json.dumps({
                         "type": "generate", 
                         "prompt": prompt, 
-                        "image_caption": description
+                        "image_bytes": vision.get("bytes")
                     })
                 )
 
