@@ -8,6 +8,7 @@ import base64
 from aioconsole import ainput
 
 GENERATION_END = "GEN_END"
+# sr = SpeechRecognition(device_index=6)
 
 def getVision():
     camera = cv2.VideoCapture(index=0)
