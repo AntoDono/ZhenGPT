@@ -9,7 +9,7 @@ from io import BytesIO
 from PIL import Image
 
 GENERATION_END = "GEN_END"
-sr = SpeechRecognition(device_index=6)
+# sr = SpeechRecognition(device_index=6)
 
 def getVision():
     camera = cv2.VideoCapture(index=0)
@@ -31,7 +31,8 @@ async def connect_and_generate():
         try:
             while True:
 
-                prompt = sr.listen()
+                # prompt = sr.listen()
+                prompt = input("User: ")
                 vision = getVision()
 
                 print(f"Prompt: {prompt}")
