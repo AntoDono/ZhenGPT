@@ -9,6 +9,7 @@ einops==0.7.0
 SpeechRecognition==3.10.1
 soundfile==0.12.1
 openai-whisper==20231117
+aioconsole==0.7.0
 vosk==0.3.45
 flask==3.0.2
 websockets==12.0

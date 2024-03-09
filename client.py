@@ -1,59 +1,62 @@
 import asyncio
-import speech_recognition as sr
-import pyaudio
-from LM import SpeechRecognition
 import websockets
 import json
 import cv2
 from io import BytesIO
 from PIL import Image
+import base64
+from aioconsole import ainput
 
 GENERATION_END = "GEN_END"
-sr = SpeechRecognition(device_index=6)
 
 def getVision():
     camera = cv2.VideoCapture(index=0)
-    retrieve, frame = camera.read() # OpenCV image is not RGB, but BGR
+    retrieve, frame = camera.read()
     camera.release()
     rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(rgb_converted)
 
     image_bytes = BytesIO()
     image.save(image_bytes, format="JPEG")
-    image_bytes = image_bytes.getvalue()
+    buffer = image_bytes.getvalue()
 
-    return dict(bytes=image_bytes)
+    img_base64 = base64.b64encode(buffer).decode('utf-8')
+    return dict(img_base64=img_base64)
+
+async def ping_intervals(websocket, intervalSeconds):
+    print(f"Pinging server at {intervalSeconds}s intervals")
+    while True:
+        await websocket.send(json.dumps({"type": "ping"}))
+        await asyncio.sleep(intervalSeconds)
+
+async def user_handler(websocket):
+    while True:
+        prompt = await ainput(">")
+        vision = getVision()
+
+        print(f"Prompt: {prompt}")
+
+        await websocket.send(
+            json.dumps({
+                "type": "generate", 
+                "prompt": prompt, 
+                "img_base64": vision.get("img_base64")
+            })
+        )
+
+        async for res in websocket:
+            response = json.loads(res)
+            word = response.get("content")
+            if (GENERATION_END == word):
+                break
+            print(word, end="", flush=True)  
+        print()
 
 async def connect_and_generate():
+    async with websockets.connect("ws://192.168.1.249:8000") as websocket:
+        ping_task = asyncio.create_task(ping_intervals(websocket, 10))
+        handle_user = asyncio.create_task(user_handler(websocket))
 
-    async with websockets.connect("ws://192.168.1.249:8000") as websocket:  # Replace with your server URL
+        await asyncio.gather(ping_task, handle_user)
 
-        try:
-            while True:
-
-                prompt = sr.listen()
-                vision = getVision()
-
-                print(f"Prompt: {prompt}")
-
-                await websocket.send(
-                    json.dumps({
-                        "type": "generate", 
-                        "prompt": prompt, 
-                        "image_bytes": vision.get("bytes")
-                    })
-                )
-
-                print("RESPONSE: ")
-
-                async for word in websocket:
-                    if (GENERATION_END == word):
-                        break
-                    print(word, end="", flush=True)  
-                print()
-        except KeyboardInterrupt:
-            await websocket.send("close")
-            await websocket.close()
-
-# Example usage
 asyncio.run(connect_and_generate())
