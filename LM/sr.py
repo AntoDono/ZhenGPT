@@ -3,6 +3,7 @@ import speech_recognition as sr
 import pyaudio
 import json
 import logging
+import asyncio
 
 logger = logging.getLogger("LMHandler - SpeechRecognition")
 logger.setLevel(logging.DEBUG)
@@ -38,7 +39,7 @@ class SpeechRecognition:
                 parsed.append(f"Microphone: {device_info.get('name')} , Device Index: {device_info.get('index')}")
         return parsed
 
-    def listen(self):
+    async def listen(self):
 
         with self.mic as source:
             print("Listening...")
@@ -48,5 +49,20 @@ class SpeechRecognition:
         print("Translating from audio...")
         # result = self.recognizer.recognize_whisper(audio, "tiny", language="english")
         result = json.loads(self.recognizer.recognize_vosk(audio)).get('text')
+        print(f"Translation took {time.time() - start_time} seconds")
+        return result
+    
+    async def asyncListen(self):
+        loop = asyncio.get_running_loop()
+        with self.mic as source:
+            print("Listening...")
+            # Run the blocking operation in a separate thread
+            audio = await loop.run_in_executor(None, self.recognizer.listen, source)
+
+        start_time = time.time()
+        print("Translating from audio...")
+        # Run the blocking operation in a separate thread
+        # result = await loop.run_in_executor(None, lambda: json.loads(self.recognizer.recognize_vosk(audio)).get('text'))
+        result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
         print(f"Translation took {time.time() - start_time} seconds")
         return result
