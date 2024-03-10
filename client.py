@@ -5,10 +5,11 @@ import cv2
 from io import BytesIO
 from PIL import Image
 import base64
+from LM import SpeechRecognition
 from aioconsole import ainput
 
 GENERATION_END = "GEN_END"
-# sr = SpeechRecognition(device_index=6)
+sr = SpeechRecognition(device_index=6)
 
 def getVision():
     camera = cv2.VideoCapture(index=0)
@@ -32,7 +33,8 @@ async def ping_intervals(websocket, intervalSeconds):
 
 async def user_handler(websocket):
     while True:
-        prompt = await ainput(">")
+        # prompt = await ainput(">")
+        prompt = await sr.asyncListen()
         vision = getVision()
 
         print(f"Prompt: {prompt}")
