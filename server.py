@@ -17,7 +17,6 @@ def captionImageFromBase64(img_base64: str):
     buffer = base64.b64decode(img_base64.encode('utf-8'))
     image_file = BytesIO(buffer)
     image = Image.open(image_file)
-    image.show()
     description = blip.generate("I see ", raw_image=image)
     
     return dict(image=image, description=description.replace("I see ",""))
