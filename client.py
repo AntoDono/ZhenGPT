@@ -15,7 +15,7 @@ GENERATION_END = "GEN_END"
 
 sr = SpeechRecognition(device_index=MIC_INDEX)
 
-print(sr.getDevices())
+print('\n'.join(sr.getDevices()))
 mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
 
