@@ -8,11 +8,14 @@ import base64
 from LM import SpeechRecognition
 from aioconsole import ainput
 
+CAMERA_INDEX=0
+MIC_INDEX=0
+SOCKET_URL="ws://192.168.1.249:8000"
 GENERATION_END = "GEN_END"
-sr = SpeechRecognition(device_index=6)
+sr = SpeechRecognition(device_index=MIC_INDEX)
 
 def getVision():
-    camera = cv2.VideoCapture(index=0)
+    camera = cv2.VideoCapture(index=CAMERA_INDEX)
     retrieve, frame = camera.read()
     camera.release()
     rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -56,7 +59,7 @@ async def user_handler(websocket):
         print()
 
 async def connect_and_generate():
-    async with websockets.connect("ws://192.168.1.249:8000") as websocket:
+    async with websockets.connect(SOCKET_URL) as websocket:
         ping_task = asyncio.create_task(ping_intervals(websocket, 10))
         handle_user = asyncio.create_task(user_handler(websocket))
 
