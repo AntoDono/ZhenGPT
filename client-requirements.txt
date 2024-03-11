@@ -1,6 +1,6 @@
 opencv-python==4.9.0.80
 SpeechRecognition==3.10.1
 soundfile==0.12.1
-openai-whisper==20231117
+# openai-whisper
 aioconsole==0.7.0
 vosk==0.3.45
