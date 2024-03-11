@@ -12,7 +12,12 @@ CAMERA_INDEX=0
 MIC_INDEX=0
 SOCKET_URL="ws://192.168.1.249:8000"
 GENERATION_END = "GEN_END"
+
 sr = SpeechRecognition(device_index=MIC_INDEX)
+
+print(sr.getDevices())
+mic_index = int(input("Which mic device? "))
+sr.setDevice(device_index=mic_index)
 
 def getVision():
     camera = cv2.VideoCapture(index=CAMERA_INDEX)
