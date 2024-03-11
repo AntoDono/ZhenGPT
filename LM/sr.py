@@ -62,7 +62,7 @@ class SpeechRecognition:
         start_time = time.time()
         print("Translating from audio...")
         # Run the blocking operation in a separate thread
-        # result = await loop.run_in_executor(None, lambda: json.loads(self.recognizer.recognize_vosk(audio)).get('text'))
-        result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
+        result = await loop.run_in_executor(None, lambda: json.loads(self.recognizer.recognize_vosk(audio)).get('text'))
+        # result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
         print(f"Translation took {time.time() - start_time} seconds")
         return result
