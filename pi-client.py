@@ -45,7 +45,7 @@ async def user_handler(websocket):
         audio = await sr.getAudioFile()
         vision = getVision()
 
-        print(f"Prompt: {prompt}")
+        print(f"Sending audio and image to server...")
 
         await websocket.send(
             json.dumps({
