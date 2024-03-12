@@ -66,3 +66,37 @@ class SpeechRecognition:
         # result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
         print(f"Translation took {time.time() - start_time} seconds")
         return result
+    
+    async def asyncListenAudioFile(self, audioFile):
+        loop = asyncio.get_running_loop()
+        with sr.AudioFile(audioFile) as source:
+            print("Listening...")
+            # Run the blocking operation in a separate thread
+            audio = await loop.run_in_executor(None, self.recognizer.record, source)
+
+        start_time = time.time()
+        print("Translating from audio...")
+        # Run the blocking operation in a separate thread
+        # result = await loop.run_in_executor(None, lambda: json.loads(self.recognizer.recognize_vosk(audio)).get('text'))
+        result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
+        print(f"Translation took {time.time() - start_time} seconds")
+        return result
+    
+    async def getAudioFile(self):
+        loop = asyncio.get_running_loop()
+        with self.mic as source:
+            print("Listening...")
+            # Run the blocking operation in a separate thread
+            audio = await loop.run_in_executor(None, self.recognizer.listen, source)
+
+        start_time = time.time()
+        print("Compiling audio to file...")
+
+        with open("user_audio.wav", "wb") as f:
+            f.write(audio.get_wav_data())
+
+        with open("recorded_audio.wav", "rb") as f:
+            audio_data = f.read()
+        # result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
+        print(f"Translation took {time.time() - start_time} seconds")
+        return audio_data

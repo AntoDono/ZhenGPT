@@ -59,15 +59,15 @@ async def ping_intervals(websocket, intervalSeconds):
 async def user_handler(websocket):
     while True:
         # prompt = await ainput(">")
-        prompt = await sr.asyncListen()
+        audio = await sr.getAudioFile()
         vision = getVision()
 
-        print(f"Prompt: {prompt}")
+        print(f"Sending audio file and image to server...")
 
         await websocket.send(
             json.dumps({
-                "type": "generate", 
-                "prompt": prompt, 
+                "type": "generate-pi", 
+                "audio": audio, 
                 "img_base64": vision.get("img_base64")
             })
         )

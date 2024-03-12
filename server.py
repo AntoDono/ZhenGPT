@@ -81,6 +81,27 @@ async def handle_connection(websocket: WebSocketServerProtocol):
                         dict(type="response", content=GENERATION_END)
                     )
                 )
+            elif data_dict["type"] == "generate-pi":
+                
+                print(f"\t+ Generate-Pi Request")
+
+                audio= data_dict["audio"]
+                img_base64 = data_dict["img_base64"]
+                audio_file = BytesIO(audio)
+                CAPTION[ID] = captionImageFromBase64(img_base64).get("description")
+
+                for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):
+                    await websocket.send(
+                        json.dumps(
+                            dict(type="response", content=word)
+                        )
+                    )  # Send response word by word
+                
+                await websocket.send(
+                    json.dumps(
+                        dict(type="response", content=GENERATION_END)
+                    )
+                )
             elif data_dict["type"] == "ping":
                 print(f"\t+ Ping Request")
             else:
