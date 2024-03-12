@@ -6,7 +6,9 @@ import uuid
 from io import BytesIO
 import base64
 import os
+from LM.sr import SpeechRecognition
 
+sr = SpeechRecognition(device_index=None)
 CONNECTIONS = []
 CAPTION = {}
 PORT = 8000
@@ -88,6 +90,7 @@ async def handle_connection(websocket: WebSocketServerProtocol):
                 audio= data_dict["audio"]
                 img_base64 = data_dict["img_base64"]
                 audio_file = BytesIO(audio)
+                prompt = sr.asyncListenAudioFile()
                 CAPTION[ID] = captionImageFromBase64(img_base64).get("description")
 
                 for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):
