@@ -26,6 +26,8 @@ def getVision():
     rgb_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(rgb_converted)
 
+    image.show()
+
     image_bytes = BytesIO()
     image.save(image_bytes, format="JPEG")
     buffer = image_bytes.getvalue()
