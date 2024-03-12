@@ -1,7 +1,9 @@
-from LM import BLIP, LanguageModel, DynamicPrompt
 from PIL import Image
 import warnings
 import cv2
+from LM.lm import LanguageModel
+from LM.blip import BLIP
+from LM.prompt import DynamicPrompt
 
 warnings.filterwarnings("ignore")
 
