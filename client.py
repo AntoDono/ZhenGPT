@@ -5,7 +5,7 @@ import cv2
 from io import BytesIO
 from PIL import Image
 import base64
-from LM import SpeechRecognition
+from LM.sr import SpeechRecognition
 from aioconsole import ainput
 
 CAMERA_INDEX=0
