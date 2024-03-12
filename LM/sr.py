@@ -95,7 +95,7 @@ class SpeechRecognition:
         with open("user_audio.wav", "wb") as f:
             f.write(audio.get_wav_data())
 
-        with open("recorded_audio.wav", "rb") as f:
+        with open("user_audio.wav", "rb") as f:
             audio_data = f.read()
         # result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
         print(f"Translation took {time.time() - start_time} seconds")
