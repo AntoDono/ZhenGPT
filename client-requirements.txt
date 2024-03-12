@@ -1,4 +1,4 @@
-opencv-python-headless==4.9.0.80
+opencv-python-headless -i https://www.piwheels.org/simple
 SpeechRecognition==3.10.1
 soundfile==0.12.1
 # openai-whisper
