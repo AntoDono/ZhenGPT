@@ -45,6 +45,7 @@ async def user_handler(websocket):
     while True:
         # prompt = await ainput(">")
         audio = await sr.getAudioFile()
+        audio_base64 = sr.encryptAudioDataToBase64(audio_data=audio)
         vision = getVision()
 
         print(f"Sending audio and image to server...")
@@ -52,7 +53,7 @@ async def user_handler(websocket):
         await websocket.send(
             json.dumps({
                 "type": "generate-pi", 
-                "audio": audio, 
+                "audio_base64": audio_base64, 
                 "img_base64": vision.get("img_base64")
             })
         )

@@ -87,10 +87,10 @@ async def handle_connection(websocket: WebSocketServerProtocol):
                 
                 print(f"\t+ Generate-Pi Request")
 
-                audio= data_dict["audio"]
+                audio_base64= data_dict["audio_base64"]
                 img_base64 = data_dict["img_base64"]
-                audio_file = BytesIO(audio)
-                prompt = sr.asyncListenAudioFile()
+                audio_file = sr.descryptBase64(audio_base64)
+                prompt = sr.asyncListenAudioFile(audio_file)
                 CAPTION[ID] = captionImageFromBase64(img_base64).get("description")
 
                 for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):

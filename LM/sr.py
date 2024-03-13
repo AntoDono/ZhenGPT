@@ -4,6 +4,8 @@ import pyaudio
 import json
 import logging
 import asyncio
+from io import BytesIO
+import base64
 
 logger = logging.getLogger("LMHandler - SpeechRecognition")
 logger.setLevel(logging.DEBUG)
@@ -99,4 +101,16 @@ class SpeechRecognition:
             audio_data = f.read()
         # result = await loop.run_in_executor(None, lambda: self.recognizer.recognize_whisper(audio))
         print(f"Translation took {time.time() - start_time} seconds")
+        return audio_data
+    
+    def encryptAudioDataToBase64(self, audio_data: bytes):
+        audio_bytes = BytesIO(audio_data)
+        buffer = audio_bytes.getvalue()
+
+        return base64.b64encode(buffer).decode('utf-8')
+    
+    def descryptBase64(self, encrypted):
+        buffer = base64.b64decode(encrypted.encode('utf-8'))
+        audio_data = BytesIO(buffer)
+        
         return audio_data
