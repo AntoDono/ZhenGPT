@@ -90,8 +90,11 @@ async def handle_connection(websocket: WebSocketServerProtocol):
                 audio_base64= data_dict["audio_base64"]
                 img_base64 = data_dict["img_base64"]
                 audio_file = sr.descryptBase64(audio_base64)
-                prompt = sr.asyncListenAudioFile(audio_file)
+                prompt = await sr.asyncListenAudioFile(audio_file)
                 CAPTION[ID] = captionImageFromBase64(img_base64).get("description")
+
+                print(f"\t+Audio prompt: {prompt}")
+                print(f"\t+Image caption: {CAPTION[ID]}")
 
                 for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):
                     await websocket.send(
