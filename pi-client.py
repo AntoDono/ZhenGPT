@@ -8,6 +8,9 @@ import base64
 from LM.sr import SpeechRecognition
 from aioconsole import ainput
 from espeak import Espeak
+import espeak
+
+espeak.init()
 
 CAMERA_INDEX=0
 MIC_INDEX=0
@@ -20,12 +23,12 @@ sr = SpeechRecognition(device_index=MIC_INDEX)
 print('\n'.join(sr.getDevices()))
 mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
-speaker = Espeak()
+speaker = espeak.Espeak()
 
 def speak_female(text):
-    speaker.set_voice("en+f3")
+    speaker.set_voice(gender=2, variant=3)
     speaker.rate = 300
-    speaker.say(text)
+    speaker.synth(text)
 
 def getVision():
     camera = cv2.VideoCapture(index=CAMERA_INDEX)
