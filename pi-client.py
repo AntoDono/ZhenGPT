@@ -7,7 +7,7 @@ from PIL import Image
 import base64
 from LM.sr import SpeechRecognition
 from aioconsole import ainput
-import espeak
+from espeak import Espeak
 
 CAMERA_INDEX=0
 MIC_INDEX=0
@@ -20,8 +20,7 @@ sr = SpeechRecognition(device_index=MIC_INDEX)
 print('\n'.join(sr.getDevices()))
 mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
-espeak.init()
-speaker = espeak.Espeak()
+speaker = Espeak()
 
 def speak_female(text):
     speaker.set_voice("en+f3")
