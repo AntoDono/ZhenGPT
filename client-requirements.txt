@@ -8,3 +8,4 @@ aioconsole==0.7.0 -i https://www.piwheels.org/simple
 pyaudio==0.2.14 -i https://www.piwheels.org/simple
 vosk==0.3.45
 numpy -i https://www.piwheels.org/simple
+python-espeak
