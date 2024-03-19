@@ -9,6 +9,7 @@ from LM.sr import SpeechRecognition
 from aioconsole import ainput
 from espeak import Espeak
 import espeak
+from aioconsole import ainput, aprint
 from gpiozero import Servo
 
 espeak.init()
@@ -55,7 +56,7 @@ def getVision():
 
 async def moveMouth(delay=500):
     while True:
-        print("yapping")
+        aprint("yapping")
         servo.max()
         await asyncio.sleep(delay)
         servo.min()
