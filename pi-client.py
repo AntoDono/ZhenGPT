@@ -78,8 +78,10 @@ def getVision():
 
 def resetMouth():
     servo.min()
+    servo.detach()
 
 async def moveMouth(delaySeconds=0.5):
+    servo.attach()
     while True:
         servo.max()
         await asyncio.sleep(delaySeconds)
