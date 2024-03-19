@@ -137,9 +137,9 @@ async def user_handler(websocket):
         decodeAudioSegement(audio_base64=tts_audio_base64)
         audio_segement = adjustSpeechRate(1.2)
 
-        blueLED.off()
-
         await playAudio(audio_segement)
+        
+        blueLED.off()
 
 async def connect_and_generate():
     async with websockets.connect(SOCKET_URL, max_size=MAX_SIZE_BYTES) as websocket:
