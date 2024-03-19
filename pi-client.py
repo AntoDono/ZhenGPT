@@ -40,6 +40,12 @@ servo = Servo(MOUTH_PIN)
 servo.min()
 blueLED = LED(LED_PIN)
 
+def connectServo():
+    global servo
+    del servo
+    servo = Servo(MOUTH_PIN)
+    servo.min()
+
 def decodeAudioSegement(audio_base64):
     # Decode the Base64 audio
     audio_bytes = base64.b64decode(audio_base64)
@@ -80,8 +86,10 @@ def getVision():
 
 def resetMouth():
     servo.min()
+    servo.detach()
 
 async def moveMouth(delaySeconds=0.5):
+    connectServo()
     while True:
         servo.max()
         await asyncio.sleep(delaySeconds)
