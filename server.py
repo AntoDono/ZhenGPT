@@ -124,7 +124,7 @@ async def handle_connection(websocket: WebSocketServerProtocol):
 
                 await websocket.send(
                     json.dumps(
-                        dict(type="audio", content=base64AudioFile(generated_text.replace("Sammy: ")))
+                        dict(type="audio", content=base64AudioFile(generated_text.replace("Sammy: ", "")))
                     )
                 )
 
