@@ -38,6 +38,11 @@ speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
 
+def connectServo():
+    global servo
+    servo = Servo(MOUTH_PIN)
+    servo.min()
+
 def decodeAudioSegement(audio_base64):
     # Decode the Base64 audio
     audio_bytes = base64.b64decode(audio_base64)
@@ -81,7 +86,7 @@ def resetMouth():
     servo.detach()
 
 async def moveMouth(delaySeconds=0.5):
-    servo.attach()
+    connectServo()
     while True:
         servo.max()
         await asyncio.sleep(delaySeconds)
