@@ -41,7 +41,7 @@ def decode_and_play_audio(audio_base64):
     audio_bytes = base64.b64decode(audio_base64)
     
     # Convert the bytes to an audio segment
-    audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="wav")
+    audio_segment = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
     
     # Play the audio segment
     play(audio_segment)
@@ -107,7 +107,7 @@ async def user_handler(websocket):
             response = json.loads(res)
             word = response.get("content")
             if (GENERATION_END == word):
-                await speak_female(message)
+                # await speak_female(message)
                 break
             message += word
             print(word, end="", flush=True)  
