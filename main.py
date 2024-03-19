@@ -7,8 +7,8 @@ from LM.prompt import DynamicPrompt
 
 warnings.filterwarnings("ignore")
 
-model = LanguageModel("microsoft/phi-2", device="cuda:0", maxLength=1024)
-# model = LanguageModel("TheBloke/CapybaraHermes-2.5-Mistral-7B-GPTQ", device_map="auto", device="cuda:0", maxLength=2048)
+# model = LanguageModel("microsoft/phi-2", device="cuda:0", maxLength=1024)
+model = LanguageModel("TheBloke/CapybaraHermes-2.5-Mistral-7B-GPTQ", device_map="auto", device="cuda:0", maxLength=2048)
 blip = BLIP("Salesforce/blip-image-captioning-large", "cpu", maxLength=1024)
 camera = cv2.VideoCapture(index=0)
 
