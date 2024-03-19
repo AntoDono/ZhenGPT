@@ -32,11 +32,11 @@ speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
 
-def speak_female(text):
+async def speak_female(text):
     speaker.say(text)
     movingMouth = asyncio.create_task(moveMouth())
     while speaker.playing():
-        pass
+        await asyncio.sleep(0.1)
     movingMouth.cancel()
     print("stopped yapping")
 
@@ -54,13 +54,12 @@ def getVision():
     img_base64 = base64.b64encode(buffer).decode('utf-8')
     return dict(img_base64=img_base64)
 
-async def moveMouth(delay=500):
+async def moveMouth(delaySeconds=0.5):
     while True:
-        aprint("yapping")
         servo.max()
-        await asyncio.sleep(delay)
+        await asyncio.sleep(delaySeconds)
         servo.min()
-        await asyncio.sleep(delay)
+        await asyncio.sleep(delaySeconds)
 
 async def ping_intervals(websocket, intervalSeconds):
     print(f"Pinging server at {intervalSeconds}s intervals")
