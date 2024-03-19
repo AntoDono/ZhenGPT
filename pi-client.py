@@ -123,7 +123,7 @@ async def user_handler(websocket):
         audio_res = json.loads(await websocket.recv())
         tts_audio_base64 = audio_res.get('content')
         decodeAudioSegement(audio_base64=tts_audio_base64)
-        audio_segement = adjustSpeechRate(1.5)
+        audio_segement = adjustSpeechRate(1.2)
         await playAudio(audio_segement)
 
 async def connect_and_generate():
