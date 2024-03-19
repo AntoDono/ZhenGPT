@@ -118,7 +118,9 @@ class LanguageModel:
                 ids = self.model.prepare_inputs_for_generation(input_tokens,
                                                         past=past_key_values,
                                                         attention_mask=attention_mask,
-                                                        use_cache=True).to(self.device)
+                                                        use_cache=True)
+                
+                ids = {k: v.to(self.device) for k, v in ids.items()}
                                                 
                 output = self.model(**ids)
                     
