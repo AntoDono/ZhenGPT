@@ -36,7 +36,7 @@ async def speak_female(text):
     speaker.say(text)
     movingMouth = asyncio.create_task(moveMouth())
     while speaker.playing():
-        asyncio.sleep(0.01)
+        asyncio.sleep(0.1)
     movingMouth.cancel()
     print("stopped yapping")
 
