@@ -16,7 +16,7 @@ import numpy as np
 from espeak import Espeak
 import espeak
 from aioconsole import ainput, aprint
-from gpiozero import Servo
+from gpiozero import Servo, LED
 
 espeak.init()
 
@@ -26,6 +26,7 @@ SOCKET_URL="ws://192.168.1.249:8000"
 MAX_SIZE_BYTES = 100 * 1024 * 1024
 GENERATION_END = "GEN_END"
 MOUTH_PIN = 26
+LED_PIN = 16
 
 sr = SpeechRecognition(device_index=MIC_INDEX)
 
@@ -37,6 +38,7 @@ speaker.set_voice(gender=2, variant=4) # 2 is females
 speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
+blueLED = LED(LED_PIN)
 
 def connectServo():
     global servo
@@ -116,6 +118,8 @@ async def user_handler(websocket):
             })
         )
 
+        blueLED.on()
+
         message = ""
 
         async for res in websocket:
@@ -131,6 +135,9 @@ async def user_handler(websocket):
         tts_audio_base64 = audio_res.get('content')
         decodeAudioSegement(audio_base64=tts_audio_base64)
         audio_segement = adjustSpeechRate(1.2)
+
+        blueLED.off()
+
         await playAudio(audio_segement)
 
 async def connect_and_generate():

@@ -10,7 +10,8 @@ vosk==0.3.45
 numpy -i https://www.piwheels.org/simple
 python-espeak
 gpiozero
-rpi-gpio
+RPi.GPIO
 sounddevice
 pydub
 simpleaudio
+lgpio
