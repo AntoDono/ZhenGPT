@@ -24,6 +24,8 @@ def generate(user_input: str, dynamicPrompt: DynamicPrompt):
 
     prompt = dynamicPrompt.generatePrompt(f"User: {user_input} |", append=True)
 
+    print(prompt)
+
     it, stop = model.generateStream(
         prompt, 
         stop_keywords=["|"],
