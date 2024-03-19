@@ -44,7 +44,7 @@ class LanguageModel:
             self.model = AutoModelForCausalLM.from_pretrained(
                 modelID,
                 quantization_config=gptqConfig,
-            ).to(self.device)
+            )
         else:
             self.model = AutoModelForCausalLM.from_pretrained(
                 modelID, 
@@ -53,7 +53,9 @@ class LanguageModel:
                 trust_remote_code=trust_remote_code,
                 torch_dtype=self.torch_dtype,
                 device_map=self.device_map
-            ).to(self.device)
+            )
+
+        self.model = self.model.to(self.device)
 
     def generate(self, prompt: str | None, max_new_tokens: int = 100, inputs = None, **kwargs):
 
@@ -105,7 +107,7 @@ class LanguageModel:
             output = None
             prev_decoded_output = prompt
 
-            with torch.no_grad():  # Disable gradients for efficiency
+            with torch.no_grad:  # Disable gradients for efficiency
 
                 for _ in range(max_new_tokens):
                     
