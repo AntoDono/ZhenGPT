@@ -5,7 +5,9 @@ import json
 import cv2
 from pydub import AudioSegment
 from pydub.playback import play
+from pydub.effects import speedup
 from io import BytesIO
+import simpleaudio as sa
 from PIL import Image
 import base64
 from LM.sr import SpeechRecognition
@@ -36,21 +38,27 @@ speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
 
-def decode_and_play_audio(audio_base64):
+def decodeAudioSegement(audio_base64):
     # Decode the Base64 audio
     audio_bytes = base64.b64decode(audio_base64)
-    
     # Convert the bytes to an audio segment
     audio_segment = AudioSegment.from_file(BytesIO(audio_bytes), format="wav")
-    
-    # Play the audio segment
-    play(audio_segment)
+    audio_segment.export("temp_audio.wav", format="wav")
 
-async def speak_female(text):
-    speaker.say(text)
+def adjustSpeechRate(playback_speed):
+    audio = AudioSegment.from_file("temp_audio.wav")
+    faster_audio = speedup(audio, playback_speed=playback_speed)
+    return faster_audio
+
+async def playAudio(audio_segment):
+    audio_segment.export("temp_audio.wav", format="wav")
+
+    wave_obj = sa.WaveObject.from_wave_file("temp_audio.wav")
+    play_obj = wave_obj.play()
+
     movingMouth = asyncio.create_task(moveMouth(0.25))
-    while speaker.playing():
-        await asyncio.sleep(0.1)
+    while play_obj.is_playing():
+       await asyncio.sleep(0.1)  # Check every 0.5 seconds
     movingMouth.cancel()
     resetMouth()
 
@@ -107,14 +115,16 @@ async def user_handler(websocket):
             response = json.loads(res)
             word = response.get("content")
             if (GENERATION_END == word):
-                # await speak_female(message)
                 break
             message += word
             print(word, end="", flush=True)  
         print()
 
         audio_res = json.loads(await websocket.recv())
-        decode_and_play_audio(audio_base64=audio_res.get('content'))
+        tts_audio_base64 = audio_res.get('content')
+        decodeAudioSegement(audio_base64=tts_audio_base64)
+        audio_segement = adjustSpeechRate(1.5)
+        playAudio(audio_segement)
 
 async def connect_and_generate():
     async with websockets.connect(SOCKET_URL, max_size=MAX_SIZE_BYTES) as websocket:
