@@ -24,11 +24,11 @@ print('\n'.join(sr.getDevices()))
 mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
 speaker = espeak.Espeak()
+speaker.set_voice(gender=2, variant=3)
+speaker.rate = 300
 
 def speak_female(text):
-    speaker.set_voice(gender=2, variant=3)
-    speaker.rate = 300
-    speaker.synth(text)
+    speaker.say(text)
 
 def getVision():
     camera = cv2.VideoCapture(index=CAMERA_INDEX)
