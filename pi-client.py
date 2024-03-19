@@ -24,8 +24,8 @@ print('\n'.join(sr.getDevices()))
 mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
 speaker = espeak.Espeak()
-speaker.set_voice(gender=2, variant=3)
-speaker.rate = 150
+speaker.set_voice(gender=2, variant=4) # 2 is females
+speaker.rate = 200
 
 def speak_female(text):
     speaker.say(text)
