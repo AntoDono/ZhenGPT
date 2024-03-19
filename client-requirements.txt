@@ -11,3 +11,4 @@ numpy -i https://www.piwheels.org/simple
 python-espeak
 gpiozero
 rpi-gpio
+sounddevice

@@ -7,12 +7,16 @@ from io import BytesIO
 import base64
 import os
 from LM.sr import SpeechRecognition
+from TTS.api import TTS
 
 sr = SpeechRecognition(device_index=None)
 CONNECTIONS = []
 CAPTION = {}
 PORT = 8000
 GENERATION_END = "GEN_END"
+MAX_SIZE_BYTES = 100 * 1024 * 1024
+
+tts = TTS(model_name="tts_models/en/ljspeech/vits", progress_bar=False, gpu=True)
 
 def captionImageFromBase64(img_base64: str):
 
@@ -22,6 +26,12 @@ def captionImageFromBase64(img_base64: str):
     description = blip.generate("I see ", raw_image=image)
     
     return dict(image=image, description=description.replace("I see ",""))
+
+def base64AudioFile(generated_text: str):
+    audio_bytes = BytesIO()
+    tts.tts_to_file(text=generated_text, file_path=audio_bytes)
+    audio_base64 = base64.b64encode(audio_bytes.getvalue()).decode('utf-8')
+    return audio_base64
 
 async def handle_connection(websocket: WebSocketServerProtocol):
 
@@ -96,7 +106,10 @@ async def handle_connection(websocket: WebSocketServerProtocol):
                 print(f"\t+Audio prompt: {prompt}")
                 print(f"\t+Image caption: {CAPTION[ID]}")
 
+                generated_text = ""
+
                 for word in generate(user_input=prompt, dynamicPrompt=dynamicPrompt):
+                    generated_text += word
                     await websocket.send(
                         json.dumps(
                             dict(type="response", content=word)
@@ -108,6 +121,13 @@ async def handle_connection(websocket: WebSocketServerProtocol):
                         dict(type="response", content=GENERATION_END)
                     )
                 )
+
+                await websocket.send(
+                    json.dumps(
+                        dict(type="audio", content=base64AudioFile(generated_text))
+                    )
+                )
+
             elif data_dict["type"] == "ping":
                 print(f"\t+ Ping Request")
             else:
@@ -118,7 +138,7 @@ async def handle_connection(websocket: WebSocketServerProtocol):
             await websocket.send(json.dumps({"error": "Invalid data format"}))
 
 async def start_server():
-    async with serve(handle_connection, host="0.0.0.0", port=PORT):
+    async with serve(handle_connection, host="0.0.0.0", port=PORT, max_size=MAX_SIZE_BYTES):
         print(f"Websocket listening at {PORT}")
         await asyncio.Future()  # This line is never reached, but keeps the server running
 
