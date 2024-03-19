@@ -27,7 +27,7 @@ mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
 speaker = espeak.Espeak()
 speaker.set_voice(gender=2, variant=4) # 2 is females
-speaker.rate = 250
+speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
 
@@ -37,6 +37,7 @@ def speak_female(text):
     while speaker.playing():
         pass
     movingMouth.cancel()
+    print("stopped yapping")
 
 def getVision():
     camera = cv2.VideoCapture(index=CAMERA_INDEX)
@@ -54,6 +55,7 @@ def getVision():
 
 async def moveMouth(delay=500):
     while True:
+        print("yapping")
         servo.max()
         await asyncio.sleep(delay)
         servo.min()
