@@ -18,10 +18,10 @@ class LanguageModel:
         self.modelID = modelID
         self.maxLength = maxLength
         self.tokenizer = AutoTokenizer.from_pretrained(modelID, max_length=self.maxLength, truncation=True, use_fast=True)
-        # self.device = torch.device(device=device)
-        self.device = device
+        self.device = torch.device(device=device)
         self.device_map = device_map
         self.torch_dtype = torch_dtype
+        torch.cuda.set_device(self.device)
 
         self.bos_token = self.tokenizer.bos_token
         self.bos_token_id = self.tokenizer.bos_token_id
@@ -56,7 +56,7 @@ class LanguageModel:
                 device_map=self.device_map
             )
 
-        self.model = self.model.to(self.device)
+        self.model.to(self.device)
 
     def generate(self, prompt: str | None, max_new_tokens: int = 100, inputs = None, **kwargs):
 
@@ -123,9 +123,7 @@ class LanguageModel:
                                                             past=past_key_values,
                                                             attention_mask=attention_mask,
                                                             use_cache=True)
-                
-                    print(ids)
-                                                    
+                                                                    
                     output = self.model(**ids)
 
                     print("GOOD1")
