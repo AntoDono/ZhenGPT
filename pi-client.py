@@ -9,6 +9,7 @@ from LM.sr import SpeechRecognition
 from aioconsole import ainput
 from espeak import Espeak
 import espeak
+from gpiozero import Servo
 
 espeak.init()
 
@@ -17,6 +18,7 @@ MIC_INDEX=0
 SOCKET_URL="ws://192.168.1.249:8000"
 MAX_SIZE_BYTES = 100 * 1024 * 1024
 GENERATION_END = "GEN_END"
+MOUTH_PIN = 26
 
 sr = SpeechRecognition(device_index=MIC_INDEX)
 
@@ -25,10 +27,16 @@ mic_index = int(input("Which mic device? "))
 sr.setDevice(device_index=mic_index)
 speaker = espeak.Espeak()
 speaker.set_voice(gender=2, variant=4) # 2 is females
-speaker.rate = 200
+speaker.rate = 250
+servo = Servo(MOUTH_PIN)
+servo.min()
 
 def speak_female(text):
     speaker.say(text)
+    movingMouth = asyncio.create_task(moveMouth())
+    while speaker.playing():
+        pass
+    movingMouth.cancel()
 
 def getVision():
     camera = cv2.VideoCapture(index=CAMERA_INDEX)
@@ -43,6 +51,13 @@ def getVision():
 
     img_base64 = base64.b64encode(buffer).decode('utf-8')
     return dict(img_base64=img_base64)
+
+async def moveMouth(delay=500):
+    while True:
+        servo.max()
+        await asyncio.sleep(delay)
+        servo.min()
+        await asyncio.sleep(delay)
 
 async def ping_intervals(websocket, intervalSeconds):
     print(f"Pinging server at {intervalSeconds}s intervals")
