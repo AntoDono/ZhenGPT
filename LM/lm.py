@@ -107,44 +107,46 @@ class LanguageModel:
             output = None
             prev_decoded_output = prompt
 
-            for _ in range(max_new_tokens):
-                    
-                attention_mask = torch.ones(len(input_tokens[0])).unsqueeze(0).to(self.device)
-                past_key_values = None
-                    
-                if output is not None:
-                    past_key_values = output["past_key_values"]
+            with torch.no_grad:  # Disable gradients for efficiency
 
-                ids = self.model.prepare_inputs_for_generation(input_tokens,
-                                                        past=past_key_values,
-                                                        attention_mask=attention_mask,
-                                                        use_cache=True)
+                for _ in range(max_new_tokens):
+                    
+                    attention_mask = torch.ones(len(input_tokens[0])).unsqueeze(0).to(self.device)
+                    past_key_values = None
+                    
+                    if output is not None:
+                        past_key_values = output["past_key_values"]
+
+                    ids = self.model.prepare_inputs_for_generation(input_tokens,
+                                                            past=past_key_values,
+                                                            attention_mask=attention_mask,
+                                                            use_cache=True).to(self.device)
                                                 
-                output = self.model(**ids)
+                    output = self.model(**ids)
                     
-                next_token = output.logits[:, -1, :].argmax(dim=-1)
+                    next_token = output.logits[:, -1, :].argmax(dim=-1)
 
-                input_tokens = torch.cat([input_tokens, torch.tensor([[next_token]]).to(self.device)], dim=-1)
+                    input_tokens = torch.cat([input_tokens, torch.tensor([[next_token]]).to(self.device)], dim=-1)
 
-                token_id = next_token.item() 
+                    token_id = next_token.item() 
 
-                decoded_output = self.tokenizer.decode(input_tokens[0], skip_special_tokens=skip_special_tokens)
-                stop_early = False
+                    decoded_output = self.tokenizer.decode(input_tokens[0], skip_special_tokens=skip_special_tokens)
+                    stop_early = False
 
-                for keyword in stop_keywords:
-                    if decoded_output[-len(keyword):] == keyword:
-                        stop_early = True
+                    for keyword in stop_keywords:
+                        if decoded_output[-len(keyword):] == keyword:
+                            stop_early = True
+                            break
+                    
+                    if stop_early:
+                        break
+
+                    if token_id in stop_token_ids or active == False:
                         break
                     
-                if stop_early:
-                    break
+                    yield decoded_output[len(prev_decoded_output):]
 
-                if token_id in stop_token_ids or active == False:
-                    break
-                    
-                yield decoded_output[len(prev_decoded_output):]
-
-                prev_decoded_output = decoded_output
+                    prev_decoded_output = decoded_output
 
         return stream, stop
                     
