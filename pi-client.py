@@ -34,11 +34,11 @@ servo.min()
 
 async def speak_female(text):
     speaker.say(text)
-    movingMouth = asyncio.create_task(moveMouth())
+    movingMouth = asyncio.create_task(moveMouth(0.25))
     while speaker.playing():
         await asyncio.sleep(0.1)
     movingMouth.cancel()
-    print("stopped yapping")
+    resetMouth()
 
 def getVision():
     camera = cv2.VideoCapture(index=CAMERA_INDEX)
@@ -53,6 +53,9 @@ def getVision():
 
     img_base64 = base64.b64encode(buffer).decode('utf-8')
     return dict(img_base64=img_base64)
+
+def resetMouth():
+    servo.min()
 
 async def moveMouth(delaySeconds=0.5):
     while True:
