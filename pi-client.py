@@ -3,6 +3,8 @@ import websockets
 import sounddevice as sd
 import json
 import cv2
+from pydub import AudioSegment
+from pydub.playback import play
 from io import BytesIO
 from PIL import Image
 import base64
@@ -33,6 +35,16 @@ speaker.set_voice(gender=2, variant=4) # 2 is females
 speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
+
+def decode_and_play_audio(audio_base64):
+    # Decode the Base64 audio
+    audio_bytes = base64.b64decode(audio_base64)
+    
+    # Convert the bytes to an audio segment
+    audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="wav")
+    
+    # Play the audio segment
+    play(audio_segment)
 
 async def speak_female(text):
     speaker.say(text)
@@ -102,11 +114,7 @@ async def user_handler(websocket):
         print()
 
         audio_res = json.loads(await websocket.recv())
-        audio_base64 = audio_res.get("content")
-        audio_bytes = base64.b64decode(audio_base64.encode('utf-8'))
-        audio_array = np.frombuffer(audio_bytes, dtype=np.float32)
-        sd.play(audio_array, samplerate=22050)
-        sd.wait()
+        decode_and_play_audio(audio_base64=audio_res.get('content'))
 
 async def connect_and_generate():
     async with websockets.connect(SOCKET_URL, max_size=MAX_SIZE_BYTES) as websocket:

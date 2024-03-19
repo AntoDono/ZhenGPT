@@ -12,3 +12,5 @@ python-espeak
 gpiozero
 rpi-gpio
 sounddevice
+pydub
+simpleaudio
