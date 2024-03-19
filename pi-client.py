@@ -15,7 +15,7 @@ espeak.init()
 CAMERA_INDEX=0
 MIC_INDEX=0
 SOCKET_URL="ws://192.168.1.249:8000"
-MAX_SIZE_BYTES = 10 * 1024 * 1024
+MAX_SIZE_BYTES = 100 * 1024 * 1024
 GENERATION_END = "GEN_END"
 
 sr = SpeechRecognition(device_index=MIC_INDEX)
