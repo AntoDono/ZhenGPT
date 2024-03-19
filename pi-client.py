@@ -101,7 +101,7 @@ async def user_handler(websocket):
             print(word, end="", flush=True)  
         print()
 
-        audio_res = await websocket.recv()
+        audio_res = json.loads(await websocket.recv())
         audio_base64 = audio_res.get("content")
         audio_bytes = base64.b64decode(audio_base64.encode('utf-8'))
         audio_array = np.frombuffer(audio_bytes, dtype=np.float32)
