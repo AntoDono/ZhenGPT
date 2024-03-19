@@ -124,7 +124,7 @@ class LanguageModel:
                                                             attention_mask=attention_mask,
                                                             use_cache=True)
                 
-                    print("GOOD")
+                    print(ids)
                                                     
                     output = self.model(**ids)
 
