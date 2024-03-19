@@ -32,11 +32,11 @@ speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
 
-async def speak_female(text):
+def speak_female(text):
     speaker.say(text)
     movingMouth = asyncio.create_task(moveMouth())
     while speaker.playing():
-        await asyncio.sleep(0.1)
+        pass
     movingMouth.cancel()
     print("stopped yapping")
 
