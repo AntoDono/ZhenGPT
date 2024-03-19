@@ -125,8 +125,6 @@ class LanguageModel:
                                                             use_cache=True)
                                                                     
                     output = self.model(**ids)
-
-                    print("GOOD1")
                         
                     next_token = output.logits[:, -1, :].argmax(dim=-1)
 
