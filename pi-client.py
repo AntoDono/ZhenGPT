@@ -32,11 +32,11 @@ speaker.rate = 200
 servo = Servo(MOUTH_PIN)
 servo.min()
 
-def speak_female(text):
+async def speak_female(text):
     speaker.say(text)
     movingMouth = asyncio.create_task(moveMouth())
     while speaker.playing():
-        pass
+        asyncio.sleep(0.01)
     movingMouth.cancel()
     print("stopped yapping")
 
@@ -90,7 +90,7 @@ async def user_handler(websocket):
             response = json.loads(res)
             word = response.get("content")
             if (GENERATION_END == word):
-                speak_female(message)
+                await speak_female(message)
                 break
             message += word
             print(word, end="", flush=True)  
