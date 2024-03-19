@@ -115,12 +115,12 @@ class LanguageModel:
                 if output is not None:
                     past_key_values = output["past_key_values"]
 
+                input_tokens = input_tokens.to(self.device)
+
                 ids = self.model.prepare_inputs_for_generation(input_tokens,
                                                         past=past_key_values,
                                                         attention_mask=attention_mask,
                                                         use_cache=True)
-                
-                ids = {k: v.to(self.device) for k, v in ids.items()}
                                                 
                 output = self.model(**ids)
                     
